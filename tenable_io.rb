@@ -7,7 +7,6 @@ require 'net/https'
 require 'pp'
 require 'json'
 
-
 opt = OptionParser.new
 OPTS = Hash.new
 OPTS[:configfile] = "conf.yaml"
@@ -18,8 +17,6 @@ if ! OPTS[:configfile]
   print "--configfile [config YAML file] is required.\n"
   exit(1)
 end
-
-CONF = YAML.load_file(OPTS[:configfile])
 
 class TenableIO
   def initialize(conf)
@@ -45,7 +42,19 @@ class TenableIO
     https = Net::HTTP.new(@uri.host, @uri.port)
     https.use_ssl = true
     result = JSON.parse(https.get(@uri.request_uri,
-                          {'X-ApiKeys' => @x_apikeys}).body)[path]
+                          {'X-ApiKeys' => @x_apikeys}).body)
+  end
+end
+
+class Editor < TenableIO
+  def list(parameter_hash)
+    if ! parameter_hash['type']
+      p "Editor.list must specify 'type' string as The 'type' of templates to retrieve ('scan' or 'policy')."
+      exit(1)
+    end
+
+    response = get('editor/' + parameter_hash['type'] + '/templates', 
+                   parameter_hash)
   end
 end
 
@@ -67,19 +76,5 @@ class Scans < TenableIO
   end
 end
 
-
-
 # sample code
-tenable_io = TenableIO.new(CONF)
-# folders = tenable.get_folders
-# folders.each{|folder|
-#   pp folder
-# }
-# scans = tenable.get_scans_of_folder(folders[1]['id'])
-# scans.each {|scan|
-#   pp scan['uuid']
-# }
-
-pp Folders.new(CONF).list(nil)
-pp Scanners.new(CONF).list(nil)
-pp Scans.new(CONF).list(nil)
+pp Editor.new(YAML.load_file(OPTS[:configfile])).list({'type' => 'scan'})
