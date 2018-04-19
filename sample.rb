@@ -1,5 +1,21 @@
 #!~/.rbenv/shims/ruby
 
+require 'optparse'
+require 'yaml'
+require './tenable_io.rb'
+
+
+opt = OptionParser.new
+OPTS = Hash.new
+OPTS[:configfile] = "conf.yaml"
+opt.on('-c VAL', '--configfile VAL') {|v| OPTS[:configfile] = v}
+opt.parse!(ARGV)
+
+if ! OPTS[:configfile]
+  print "--configfile [config YAML file] is required.\n"
+  exit(1)
+end
+
 editors = Editor.new(YAML.load_file(OPTS[:configfile]))
 basic_scan_uuid = String.new
 editors_templates = editors.list({'type' => 'scan'})['templates']
