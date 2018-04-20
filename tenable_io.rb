@@ -87,6 +87,27 @@ class Scans < TenableIO
 
     response = post('/scans', post_body_hash)
   end
+
+  def launch(post_body_hash)
+    if ! post_body_hash['scan_id']
+      p "scan_id is required."
+      exit(1)
+    end
+
+    response = post('/scans/' + post_body_hash['scan_id'] + '/launch',
+                    post_body_hash)
+  end
+
+  def export_request(post_body_hash)
+    if ! (post_body_hash['scan_id'] &&
+          post_body_hash['format'])
+      p "scan_id and format is required."
+      exit(1)
+    end
+
+    response = post('/scans/' + post_body_hash['scan_id']+ '/export',
+                    post_body_hash)
+  end
 end
 
 
